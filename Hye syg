@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HYE SAYANG — Cerita Animasi Interaktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            overflow-x: hidden;
+            background-color: #0b070c;
+            color: #fdf8f5;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .font-serif-romantic {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Ambient romantic night-to-warm-gold aurora background */
+        .romantic-bg {
+            background:
+                radial-gradient(circle at 18% 20%, rgba(225, 112, 140, 0.16), transparent 45%),
+                radial-gradient(circle at 82% 75%, rgba(245, 176, 95, 0.14), transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(120, 58, 115, 0.12), transparent 65%),
+                linear-gradient(160deg, #0b070c 0%, #160d18 52%, #0e0910 100%);
+        }
+
+        /* Live "video hidup" Ken Burns motion for photos */
+        @keyframes liveMotionOne {
+            0% {
+                transform: scale(1.03) translate3d(-1.5%, -1%, 0);
+            }
+            50% {
+                transform: scale(1.11) translate3d(1.8%, 1.4%, 0);
+            }
+            100% {
+                transform: scale(1.04) translate3d(-1.2%, 0.8%, 0);
+            }
+        }
+
+        @keyframes liveMotionTwo {
+            0% {
+                transform: scale(1.04) translate3d(1.5%, -1.2%, 0);
+            }
+            50% {
+                transform: scale(1.12) translate3d(-1.6%, 1.2%, 0);
+            }
+            100% {
+                transform: scale(1.04) translate3d(1.2%, -0.6%, 0);
+            }
+        }
+
+        @keyframes liveMotionThree {
+            0% {
+                transform: scale(1.02) translate3d(0%, 1.2%, 0);
+            }
+            50% {
+                transform: scale(1.10) translate3d(0%, -1.5%, 0);
+            }
+            100% {
+                transform: scale(1.03) translate3d(0%, 0.8%, 0);
+            }
+        }
+
+        .live-photo-1 {
+            animation: liveMotionOne 14s ease-in-out infinite;
+        }
+
+        .live-photo-2 {
+            animation: liveMotionTwo 14s ease-in-out infinite;
+        }
+
+        .live-photo-3 {
+            animation: liveMotionThree 13s ease-in-out infinite;
+        }
+
+        /* Slow downward drift ("sambil meleret kebawah") for Scene 1 text */
+        @keyframes driftDownGentle {
+            0% {
+                transform: translateY(-10px);
+                opacity: 0.35;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(22px);
+                opacity: 1;
+            }
+        }
+
+        .drift-down-active {
+            animation: driftDownGentle 8.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Character-by-character reveal ("timbul satu persatu") */
+        .char-item {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(8px) scale(0.95);
+            filter: blur(3px);
+            transition:
+                opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 0.55s ease;
+        }
+
+        .char-item.revealed {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        /* Gentle beat pulse synced to ambient music */
+        @keyframes softBeatPulse {
+            0%, 100% {
+                transform: scale(1);
+                text-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
+            }
+            50% {
+                transform: scale(1.025);
+                text-shadow: 0 0 28px rgba(244, 114, 182, 0.45);
+            }
+        }
+
+        .beat-pulse {
+            animation: softBeatPulse 2.4s ease-in-out infinite;
+        }
+
+        /* Glowing interactive buttons */
+        .glow-btn {
+            background: linear-gradient(135deg, rgba(244, 114, 182, 0.9), rgba(251, 191, 36, 0.88));
+            box-shadow: 0 0 24px rgba(244, 114, 182, 0.42), 0 8px 24px rgba(0, 0, 0, 0.45);
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, opacity 0.6s ease;
+        }
+
+        .glow-btn:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 0 34px rgba(251, 191, 36, 0.65), 0 12px 28px rgba(0, 0, 0, 0.55);
+        }
+
+        .glow-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Floating bokeh & hearts canvas */
+        #ambientCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Photo frame glass shine */
+        .photo-card {
+            box-shadow:
+                0 24px 60px rgba(0, 0, 0, 0.65),
+                0 0 0 1px rgba(255, 255, 255, 0.12),
+                0 0 45px rgba(244, 114, 182, 0.14);
+        }
+    </style>
+</head>
+<body class="romantic-bg relative selection:bg-rose-400/30 selection:text-white">
+
+    <!-- Background Live Particles & Warm Bokeh Hearts -->
+    <canvas id="ambientCanvas"></canvas>
+
+    <!-- Top Floating Bar: Audio Toggle & Optional Photo Picker -->
+    <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 pointer-events-none">
+        <button id="restartQuickBtn" type="button" class="pointer-events-auto hidden items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-rose-100/90 transition cursor-pointer" title="Mula semula dari Page 1">
+            <span>↺</span>
+            <span>Mula Semula</span>
+        </button>
+        <div id="topSpacer" class="w-1"></div>
+
+        <div class="pointer-events-auto flex items-center gap-2">
+            <!-- Local photo fallback loader in case files aren't in same folder -->
+            <label for="localPhotosInput" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-amber-100/90 transition cursor-pointer" title="Pilih 3 gambar dari peranti jika perlu">
+                <span>🖼️</span>
+                <span class="hidden sm:inline">Tukar Gambar</span>
+            </label>
+            <input id="localPhotosInput" type="file" accept="image/*" multiple class="hidden">
+
+            <!-- Web Audio Sound Toggle -->
+            <button id="audioToggleBtn" type="button" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-white transition cursor-pointer" aria-label="Kawalan Muzik Latar">
+                <span id="audioIcon">🎵</span>
+                <span id="audioLabel">Muzik: Hidup</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="relative z-10 min-h-screen w-full flex flex-col items-center justify-center px-4 py-16 sm:py-12">
+
+        <!-- =========================================================
+             PAGE 1: ENTRY — "HYE SAYANG" & CIRCULAR SLIDE-TO-OPEN BUTTON
+             ========================================================= -->
+        <section id="page1" class="w-full max-w-md mx-auto flex flex-col items-center text-center transition-all duration-700">
+            <div class="mb-3 inline-flex items-center gap-2 px-4 py-1 rounded-full bg-rose-500/15 border border-rose-300/25 text-rose-200 text-xs tracking-widest uppercase">
+                <span>✦</span>
+                <span>Kisah Cinta &amp; Kenangan Kita</span>
+                <span>✦</span>
+            </div>
+
+            <h1 class="font-serif-romantic text-5xl sm:text-7xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-amber-100 to-rose-300 beat-pulse drop-shadow">
+                HYE SAYANG
+            </h1>
+
+            <p class="mt-4 text-sm sm:text-base text-rose-100/75 leading-relaxed max-w-xs sm:max-w-sm font-light">
+                Sebuah bingkisan kecil penuh rasa sayang, syukur, dan doa untuk perjalanan kita bersama.
+            </p>
+
+            <!-- Circular Slider Track ("Leret ke kanan untuk BUKA") -->
+            <div class="mt-10 w-full max-w-[320px] sm:max-w-[350px]">
+                <div id="sliderTrack" class="relative h-16 sm:h-[68px] w-full rounded-full bg-white/10 border border-rose-200/25 backdrop-blur-xl shadow-[0_12px_35px_rgba(0,0,0,0.5),inset_0_0_20px_rgba(244,114,182,0.12)] flex items-center p-1.5 overflow-hidden select-none">
+                    <!-- Progress fill trail -->
+                    <div id="sliderFill" class="absolute left-0 top-0 bottom-0 w-14 rounded-full bg-gradient-to-r from-rose-500/40 via-pink-400/35 to-amber-300/35 transition-none pointer-events-none"></div>
+
+                    <!-- Center label -->
+                    <span id="sliderHint" class="w-full text-center pl-12 pr-4 text-xs sm:text-sm font-semibold tracking-wider text-rose-100/85 pointer-events-none transition-opacity duration-200">
+                        LERET KE KANAN UNTUK BUKA →
+                    </span>
+
+                    <!-- Circular Draggable Knob -->
+                    <button id="circularKnob" type="button" aria-label="Leret ke kanan untuk buka" class="relative z-10 w-13 h-13 sm:w-14 sm:h-14 aspect-square rounded-full bg-gradient-to-br from-rose-400 via-pink-500 to-amber-400 text-white shadow-[0_0_22px_rgba(244,114,182,0.75)] border-2 border-white/60 flex items-center justify-center cursor-grab active:cursor-grabbing touch-none transition-shadow">
+                        <span class="text-lg font-bold leading-none">❤</span>
+                    </button>
+                </div>
+                <p class="mt-3 text-[11px] text-rose-200/50">
+                    Leret butang bulat ke kanan atau tekan untuk membuka
+                </p>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             STORY VIEWPORT (SCENES 1, 2 & 3)
+             ========================================================= -->
+        <section id="storyViewport" class="hidden w-full max-w-5xl mx-auto opacity-0 transition-opacity duration-700">
+
+            <!-- Progress Dots -->
+            <div class="flex items-center justify-center gap-2.5 mb-6">
+                <span id="dot1" class="h-2 w-8 rounded-full bg-gradient-to-r from-rose-400 to-amber-300 transition-all duration-500"></span>
+                <span id="dot2" class="h-2 w-2 rounded-full bg-white/25 transition-all duration-500"></span>
+                <span id="dot3" class="h-2 w-2 rounded-full bg-white/25 transition-all duration-500"></span>
+            </div>
+
+            <!-- -------------------------------------------------------
+                 SCENE 1: PHOTO 1 (1000161525.jpg) + DRIFTING DOWN TEXT + "CUBA TEKAN"
+                 ------------------------------------------------------- -->
+            <div id="scene1" class="hidden flex-col items-center text-center">
+                <div class="relative w-full max-w-[300px] sm:max-w-[340px] aspect-[3/4] rounded-3xl overflow-hidden photo-card bg-black/40">
+                    <img id="imgPhoto1" src="1000161525.jpg" alt="Kenangan Pertama Kita" class="w-full h-full object-cover live-photo-1" onerror="handleImageError(this, 1)">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0e0811]/75 via-transparent to-rose-300/10 pointer-events-none"></div>
+                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-rose-100/80 px-2 py-1 rounded-full bg-black/45 backdrop-blur-sm border border-white/10">
+                        <span>♥ Memori #01</span>
+                        <span class="italic">Sedang bergerak...</span>
+                    </div>
+                </div>
+
+                <!-- Text appearing character-by-character synced to beat while slowly drifting downward -->
+                <div id="scene1DriftBox" class="mt-6 max-w-xl px-3">
+                    <p id="scene1MainText" class="font-serif-romantic text-2xl sm:text-3xl md:text-[32px] font-semibold leading-snug text-rose-50 drop-shadow-[0_2px_14px_rgba(244,114,182,0.3)]"></p>
+                    <p id="scene1SubText" class="mt-3 text-xs sm:text-sm text-amber-100/80 font-light italic tracking-wide"></p>
+                </div>
+
+                <!-- Button: CUBA TEKAN -->
+                <div class="mt-10">
+                    <button id="btnCubaTekan" type="button" class="glow-btn opacity-0 pointer-events-none px-8 py-3.5 rounded-full text-sm sm:text-base font-bold tracking-widest uppercase text-slate-950 cursor-pointer">
+                        CUBA TEKAN ✨
+                    </button>
+                </div>
+            </div>
+
+            <!-- -------------------------------------------------------
+                 SCENE 2: PHOTO 2 (1000161524.jpg) + TEXT AT OUTER RIGHT SPACE + "LIHAT INI"
+                 ------------------------------------------------------- -->
+            <div id="scene2" class="hidden flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
+                <!-- Photo 2 -->
+                <div class="relative w-full max-w-[290px] sm:max-w-[330px] md:max-w-[350px] aspect-[3/4] rounded-3xl overflow-hidden photo-card bg-black/40 flex-shrink-0">
+                    <img id="imgPhoto2" src="1000161524.jpg" alt="Saat Bahagia Bersama" class="w-full h-full object-cover live-photo-2" onerror="handleImageError(this, 2)">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0e0811]/70 via-transparent to-amber-200/10 pointer-events-none"></div>
+                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-amber-100/85 px-2 py-1 rounded-full bg-black/45 backdrop-blur-sm border border-white/10">
+                        <span>💍 Ikatan Kasih</span>
+                        <span class="italic">Selamanya bersama</span>
+                    </div>
+                </div>
+
+                <!-- Outer space to the RIGHT of Photo 2 ("di tepi ruangan luar gambar sebelah kanan gambar") -->
+                <div class="w-full md:flex-1 max-w-md bg-white/[0.04] hover:bg-white/[0.06] border border-rose-200/15 backdrop-blur-md rounded-3xl p-5 sm:p-7 text-left shadow-[0_18px_45px_rgba(0,0,0,0.45)] transition-colors">
+                    <div class="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-amber-300/85 mb-3">
+                        <span>✦</span>
+                        <span>Dari Hati Seorang Suami</span>
+                    </div>
+
+                    <p id="scene2MainText" class="font-serif-romantic text-2xl sm:text-3xl font-semibold leading-snug text-rose-50"></p>
+                    <p id="scene2SubText" class="mt-3.5 text-xs sm:text-sm text-rose-100/75 leading-relaxed font-light"></p>
+
+                    <div class="mt-6 flex justify-start">
+                        <button id="btnLihatIni" type="button" class="glow-btn opacity-0 pointer-events-none px-7 py-3 rounded-full text-xs sm:text-sm font-bold tracking-widest uppercase text-slate-950 cursor-pointer">
+                            LIHAT INI 💝
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- -------------------------------------------------------
+                 SCENE 3: PHOTO 3 (1000161526.jpg) + "inilah semangat kita..."
+                 ------------------------------------------------------- -->
+            <div id="scene3" class="hidden flex-col items-center text-center">
+                <div class="relative w-full max-w-[300px] sm:max-w-[340px] aspect-[3/4] rounded-3xl overflow-hidden photo-card bg-black/40">
+                    <img id="imgPhoto3" src="1000161526.jpg" alt="Semangat & Harapan Kita" class="w-full h-full object-cover live-photo-3" onerror="handleImageError(this, 3)">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0e0811]/75 via-transparent to-amber-300/10 pointer-events-none"></div>
+                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-amber-100/90 px-2 py-1 rounded-full bg-black/45 backdrop-blur-sm border border-white/10">
+                        <span>🌟 Semangat Kita</span>
+                        <span class="italic">Cahaya kehidupan</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 max-w-xl px-3">
+                    <p id="scene3MainText" class="font-serif-romantic text-3xl sm:text-4xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-200 to-amber-300"></p>
+                    <p id="scene3SubText" class="mt-3 text-xs sm:text-sm text-rose-100/80 leading-relaxed font-light"></p>
+                </div>
+
+                <div id="scene3ReplayWrap" class="mt-7 opacity-0 pointer-events-none transition-opacity duration-700">
+                    <button id="btnReplay" type="button" class="px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold tracking-wider bg-white/10 hover:bg-white/20 border border-white/20 text-rose-100 backdrop-blur-md transition cursor-pointer">
+                        ↺ ULANG SEMULA CERITA
+                    </button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Subtle Status Toast (No alert()) -->
+    <div id="statusToast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-black/75 border border-rose-300/25 text-xs text-rose-100 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <script>
+        /**
+         * HYE SAYANG — Interactive Animated Romantic Story Engine
+         */
+
+        // --- 1. IMAGE FALLBACK HANDLER & LOCAL UPLOAD SUPPORT ---
+        function showToast(msg) {
+            const toast = document.getElementById('statusToast');
+            toast.textContent = msg;
+            toast.classList.remove('opacity-0');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 3200);
+        }
+
+        function createFallbackSvgDataUrl(label, sublabel, gradStart, gradEnd) {
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+                <defs>
+                    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="${gradStart}"/>
+                        <stop offset="100%" stop-color="${gradEnd}"/>
+                    </linearGradient>
+                </defs>
+                <rect width="600" height="800" fill="url(#g)"/>
+                <circle cx="300" cy="340" r="110" fill="rgba(255,255,255,0.08)"/>
+                <text x="300" y="350" text-anchor="middle" fill="#fff1f2" font-family="Georgia, serif" font-size="38" font-weight="bold">${label}</text>
+                <text x="300" y="400" text-anchor="middle" fill="#fde68a" font-family="sans-serif" font-size="20">${sublabel}</text>
+                <text x="300" y="730" text-anchor="middle" fill="rgba(255,255,255,0.65)" font-family="sans-serif" font-size="16">Tekan "Tukar Gambar" di atas untuk muat naik foto</text>
+            </svg>`;
+            return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+        }
+
+        function handleImageError(imgEl, slot) {
+            if (imgEl.dataset.fallbackApplied) return;
+            imgEl.dataset.fallbackApplied = '1';
+            const fallbacks = {
+                1: createFallbackSvgDataUrl('GAMBAR #1', 'Hye SAYANG', '#3b1528', '#1b1128'),
+                2: createFallbackSvgDataUrl('GAMBAR #2', 'Ikatan Suami Isteri', '#2a1829', '#3b2516'),
+                3: createFallbackSvgDataUrl('GAMBAR #3', 'Inilah Semangat Kita', '#1f2430', '#3d2229')
+            };
+            imgEl.src = fallbacks[slot] || fallbacks[1];
+        }
+
+        document.getElementById('localPhotosInput').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            const targets = ['imgPhoto1', 'imgPhoto2', 'imgPhoto3'];
+            files.slice(0, 3).forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = document.getElementById(targets[idx]);
+                    if (img && ev.target && ev.target.result) {
+                        img.dataset.fallbackApplied = '';
+                        img.src = ev.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            showToast(`${Math.min(files.length, 3)} gambar berjaya dimuatkan!`);
+        });
+
+        // --- 2. WEB AUDIO API: GENTLE ROMANTIC AMBIENT MELODY & BEAT ---
+        class RomanticAudio {
+            constructor() {
+                this.ctx = null;
+                this.masterGain = null;
+                this.muted = false;
+                this.started = false;
+                this.stepTimer = null;
+                this.stepIndex = 0;
+            }
+
+            ensureContext() {
+                if (this.ctx) return;
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioCtx();
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.value = this.muted ? 0 : 0.28;
+                this.masterGain.connect(this.ctx.destination);
+            }
+
+            startMusic() {
+                this.ensureContext();
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+                if (this.started) return;
+                this.started = true;
+
+                // Warm emotional chord progression (FMaj7 -> Em7 -> Dm7 -> Cmaj7) in Hz
+                const notes = [
+                    261.63, 329.63, 392.00, 493.88, // Cmaj7 arpeggio
+                    220.00, 261.63, 329.63, 392.00, // Am7
+                    174.61, 220.00, 261.63, 349.23, // Fmaj7
+                    196.00, 246.94, 293.66, 392.00  // G6 / warm resolution
+                ];
+
+                // Calm tempo (~78 BPM -> ~760ms per gentle note)
+                this.stepTimer = setInterval(() => {
+                    if (!this.ctx || this.muted || this.ctx.state !== 'running') return;
+                    const freq = notes[this.stepIndex % notes.length];
+                    this.playSoftNote(freq, 1.45);
+                    if (this.stepIndex % 4 === 0) {
+                        this.playSoftNote(freq * 0.5, 2.4); // Warm low pad root
+                    }
+                    this.stepIndex++;
+                }, 760);
+            }
+
+            playSoftNote(freq, duration = 1.2) {
+                if (!this.ctx || this.muted) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const filter = this.ctx.createBiquadFilter();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1100, now);
+
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.linearRampToValueAtTime(0.14, now + 0.14);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start(now);
+                osc.stop(now + duration + 0.05);
+            }
+
+            playChime() {
+                this.ensureContext();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                [523.25, 659.25, 783.99].forEach((f, idx) => {
+                    setTimeout(() => this.playSoftNote(f, 0.9), idx * 90);
+                });
+            }
+
+            toggleMute() {
+                this.ensureContext();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                this.muted = !this.muted;
+                if (this.masterGain) {
+                    this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 0.28, this.ctx.currentTime, 0.06);
+                }
+                if (!this.started && !this.muted) {
+                    this.startMusic();
+                }
+                return !this.muted;
+            }
+        }
+
+        const romanticAudio = new RomanticAudio();
+
+        const audioToggleBtn = document.getElementById('audioToggleBtn');
+        const audioIcon = document.getElementById('audioIcon');
+        const audioLabel = document.getElementById('audioLabel');
+
+        audioToggleBtn.addEventListener('click', () => {
+            const isOn = romanticAudio.toggleMute();
+            audioIcon.textContent = isOn ? '🎵' : '🔇';
+            audioLabel.textContent = isOn ? 'Muzik: Hidup' : 'Muzik: Senyap';
+        });
+
+        // --- 3. AMBIENT FLOATING PARTICLES & BOKEH HEARTS CANVAS ---
+        const canvas = document.getElementById('ambientCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function initParticles() {
+            const count = Math.min(42, Math.floor((window.innerWidth * window.innerHeight) / 22000) + 18);
+            particles = Array.from({ length: count }, (_, i) => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: 2 + Math.random() * 4.5,
+                vy: -(0.22 + Math.random() * 0.45),
+                vx: (Math.random() - 0.5) * 0.35,
+                swayPhase: Math.random() * Math.PI * 2,
+                swaySpeed: 0.008 + Math.random() * 0.012,
+                alpha: 0.14 + Math.random() * 0.36,
+                isHeart: i % 4 === 0,
+                hue: i % 2 === 0 ? '251, 113, 133' : '253, 224, 71'
+            }));
+        }
+        initParticles();
+
+        function drawHeart(cx, cy, size, colorStr, alpha) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(size * 0.14, size * 0.14);
+            ctx.beginPath();
+            ctx.moveTo(0, 3);
+            ctx.bezierCurveTo(-5, -3, -12, 2, 0, 12);
+            ctx.bezierCurveTo(12, 2, 5, -3, 0, 3);
+            ctx.closePath();
+            ctx.fillStyle = `rgba(${colorStr}, ${alpha})`;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function renderParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const p of particles) {
+                p.y += p.vy;
+                p.swayPhase += p.swaySpeed;
+                p.x += p.vx + Math.sin(p.swayPhase) * 0.25;
+
+                if (p.y < -25) {
+                    p.y = canvas.height + 25;
+                    p.x = Math.random() * canvas.width;
+                }
+                if (p.x < -25) p.x = canvas.width + 25;
+                if (p.x > canvas.width + 25) p.x = -25;
+
+                if (p.isHeart) {
+                    drawHeart(p.x, p.y, p.r * 2.1, p.hue, p.alpha);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.hue}, ${p.alpha * 0.75})`;
+                    ctx.fill();
+                }
+            }
+            requestAnimationFrame(renderParticles);
+        }
+        requestAnimationFrame(renderParticles);
+
+        // --- 4. PAGE 1: CIRCULAR SLIDE-TO-OPEN INTERACTION ---
+        const page1 = document.getElementById('page1');
+        const storyViewport = document.getElementById('storyViewport');
+        const sliderTrack = document.getElementById('sliderTrack');
+        const circularKnob = document.getElementById('circularKnob');
+        const sliderFill = document.getElementById('sliderFill');
+        const sliderHint = document.getElementById('sliderHint');
+        const restartQuickBtn = document.getElementById('restartQuickBtn');
+
+        let isDraggingKnob = false;
+        let dragStartX = 0;
+        let currentKnobX = 0;
+        let unlocked = false;
+
+        function getMaxKnobOffset() {
+            const trackRect = sliderTrack.getBoundingClientRect();
+            const knobRect = circularKnob.getBoundingClientRect();
+            return Math.max(40, trackRect.width - knobRect.width - 12);
+        }
+
+        function setKnobPosition(px) {
+            const maxOffset = getMaxKnobOffset();
+            const clamped = Math.max(0, Math.min(px, maxOffset));
+            currentKnobX = clamped;
+            circularKnob.style.transform = `translateX(${clamped}px)`;
+            sliderFill.style.width = `${clamped + circularKnob.offsetWidth + 6}px`;
+
+            const ratio = clamped / maxOffset;
+            sliderHint.style.opacity = String(Math.max(0, 1 - ratio * 1.4));
+
+            if (ratio >= 0.82 && !unlocked) {
+                triggerUnlockPage2();
+            }
+        }
+
+        function resetKnobPosition() {
+            circularKnob.style.transition = 'transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)';
+            sliderFill.style.transition = 'width 0.35s cubic-bezier(0.22, 1, 0.36, 1)';
+            setKnobPosition(0);
+            setTimeout(() => {
+                circularKnob.style.transition = '';
+                sliderFill.style.transition = '';
+            }, 360);
+        }
+
+        circularKnob.addEventListener('pointerdown', (e) => {
+            if (unlocked) return;
+            isDraggingKnob = true;
+            dragStartX = e.clientX - currentKnobX;
+            circularKnob.setPointerCapture(e.pointerId);
+            romanticAudio.startMusic();
+        });
+
+        circularKnob.addEventListener('pointermove', (e) => {
+            if (!isDraggingKnob || unlocked) return;
+            setKnobPosition(e.clientX - dragStartX);
+        });
+
+        circularKnob.addEventListener('pointerup', () => {
+            if (!isDraggingKnob || unlocked) return;
+            isDraggingKnob = false;
+            const maxOffset = getMaxKnobOffset();
+            if (currentKnobX < maxOffset * 0.82) {
+                resetKnobPosition();
+            }
+        });
+
+        // Allow quick tap/click on knob or track for effortless accessibility
+        circularKnob.addEventListener('click', () => {
+            if (!unlocked && currentKnobX < 8) {
+                romanticAudio.startMusic();
+                const maxOffset = getMaxKnobOffset();
+                circularKnob.style.transition = 'transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                sliderFill.style.transition = 'width 0.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                setKnobPosition(maxOffset);
+            }
+        });
+
+        function triggerUnlockPage2() {
+            unlocked = true;
+            isDraggingKnob = false;
+            romanticAudio.startMusic();
+            romanticAudio.playChime();
+
+            page1.style.opacity = '0';
+            page1.style.transform = 'translateY(-18px) scale(0.97)';
+
+            setTimeout(() => {
+                page1.classList.add('hidden');
+                restartQuickBtn.classList.remove('hidden');
+                restartQuickBtn.classList.add('flex');
+                storyViewport.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    storyViewport.style.opacity = '1';
+                });
+                enterScene(1);
+            }, 520);
+        }
+
+        // --- 5. CHARACTER-BY-CHARACTER REVEAL ("TIMBUL SATU PERSATU") ---
+        let activeTimers = [];
+
+        function clearStoryTimers() {
+            activeTimers.forEach(t => clearTimeout(t));
+            activeTimers = [];
+        }
+
+        function revealTextOneByOne(containerEl, text, intervalMs = 68, onComplete = null) {
+            containerEl.innerHTML = '';
+            const words = text.split(' ');
+            const spans = [];
+
+            words.forEach((word, wIdx) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.style.display = 'inline-block';
+                wordSpan.style.whiteSpace = 'nowrap';
+
+                Array.from(word).forEach((ch) => {
+                    const charSpan = document.createElement('span');
+                    charSpan.textContent = ch;
+                    charSpan.className = 'char-item';
+                    wordSpan.appendChild(charSpan);
+                    spans.push(charSpan);
+                });
+
+                containerEl.appendChild(wordSpan);
+                if (wIdx < words.length - 1) {
+                    containerEl.appendChild(document.createTextNode(' '));
+                }
+            });
+
+            spans.forEach((span, idx) => {
+                const t = setTimeout(() => {
+                    span.classList.add('revealed');
+                    if (idx === spans.length - 1 && typeof onComplete === 'function') {
+                        const doneTimer = setTimeout(onComplete, 450);
+                        activeTimers.push(doneTimer);
+                    }
+                }, idx * intervalMs);
+                activeTimers.push(t);
+            });
+        }
+
+        // --- 6. SCENE FLOW: SCENE 1 -> "CUBA TEKAN" -> SCENE 2 -> "LIHAT INI" -> SCENE 3 ---
+        const scene1 = document.getElementById('scene1');
+        const scene2 = document.getElementById('scene2');
+        const scene3 = document.getElementById('scene3');
+
+        const dot1 = document.getElementById('dot1');
+        const dot2 = document.getElementById('dot2');
+        const dot3 = document.getElementById('dot3');
+
+        const scene1DriftBox = document.getElementById('scene1DriftBox');
+        const scene1MainText = document.getElementById('scene1MainText');
+        const scene1SubText = document.getElementById('scene1SubText');
+        const btnCubaTekan = document.getElementById('btnCubaTekan');
+
+        const scene2MainText = document.getElementById('scene2MainText');
+        const scene2SubText = document.getElementById('scene2SubText');
+        const btnLihatIni = document.getElementById('btnLihatIni');
+
+        const scene3MainText = document.getElementById('scene3MainText');
+        const scene3SubText = document.getElementById('scene3SubText');
+        const scene3ReplayWrap = document.getElementById('scene3ReplayWrap');
+
+        function setProgressDot(activeNum) {
+            const dots = [dot1, dot2, dot3];
+            dots.forEach((d, idx) => {
+                const num = idx + 1;
+                if (num === activeNum) {
+                    d.className = 'h-2 w-8 rounded-full bg-gradient-to-r from-rose-400 to-amber-300 transition-all duration-500';
+                } else if (num < activeNum) {
+                    d.className = 'h-2 w-3 rounded-full bg-rose-300/70 transition-all duration-500';
+                } else {
+                    d.className = 'h-2 w-2 rounded-full bg-white/25 transition-all duration-500';
+                }
+            });
+        }
+
+        function enterScene(sceneNumber) {
+            clearStoryTimers();
+            setProgressDot(sceneNumber);
+
+            scene1.classList.add('hidden');
+            scene1.classList.remove('flex');
+            scene2.classList.add('hidden');
+            scene2.classList.remove('flex');
+            scene3.classList.add('hidden');
+            scene3.classList.remove('flex');
+
+            if (sceneNumber === 1) {
+                btnCubaTekan.classList.add('opacity-0', 'pointer-events-none');
+                scene1SubText.textContent = '';
+
+                // Reset & trigger slow downward drift ("sambil meleret kebawah")
+                scene1DriftBox.classList.remove('drift-down-active');
+                void scene1DriftBox.offsetWidth;
+                scene1DriftBox.classList.add('drift-down-active');
+
+                scene1.classList.remove('hidden');
+                scene1.classList.add('flex');
+
+                const mainQuote1 = 'Hye SAYANG terima kasih untuk selama ini kamu masi bertahan walaupun saya banyak kekurangan..';
+                const subQuote1 = 'Setiap detik bersamamu adalah anugerah yang tidak pernah aku anggap ringan.';
+
+                revealTextOneByOne(scene1MainText, mainQuote1, 72, () => {
+                    scene1SubText.textContent = subQuote1;
+                    scene1SubText.style.opacity = '0';
+                    scene1SubText.style.transition = 'opacity 0.9s ease';
+                    requestAnimationFrame(() => {
+                        scene1SubText.style.opacity = '1';
+                    });
+
+                    const btnTimer = setTimeout(() => {
+                        btnCubaTekan.classList.remove('opacity-0', 'pointer-events-none');
+                    }, 650);
+                    activeTimers.push(btnTimer);
+                });
+
+            } else if (sceneNumber === 2) {
+                btnLihatIni.classList.add('opacity-0', 'pointer-events-none');
+                scene2SubText.textContent = '';
+
+                scene2.classList.remove('hidden');
+                scene2.classList.add('flex');
+
+                const mainQuote2 = 'Hye SAYANG terima kasih kerana sanggup menerima kekurangan suami mu ini';
+                const subQuote2 = 'Walaupun hidup ada pasang surutnya, tanganmu tetap menggenggam erat. Maafkan segala kurangku, dan terima kasih kerana sentiasa melengkapkan.';
+
+                revealTextOneByOne(scene2MainText, mainQuote2, 70, () => {
+                    scene2SubText.textContent = subQuote2;
+                    scene2SubText.style.opacity = '0';
+                    scene2SubText.style.transition = 'opacity 0.9s ease';
+                    requestAnimationFrame(() => {
+                        scene2SubText.style.opacity = '1';
+                    });
+
+                    const btnTimer = setTimeout(() => {
+                        btnLihatIni.classList.remove('opacity-0', 'pointer-events-none');
+                    }, 650);
+                    activeTimers.push(btnTimer);
+                });
+
+            } else if (sceneNumber === 3) {
+                scene3SubText.textContent = '';
+                scene3ReplayWrap.classList.add('opacity-0', 'pointer-events-none');
+
+                scene3.classList.remove('hidden');
+                scene3.classList.add('flex');
+
+                const mainQuote3 = 'Inilah semangat kita...';
+                const subQuote3 = 'Sebab cinta ini bukan sekadar tentang hari ini—tetapi tentang harapan, tawa kecil, dan kekuatan keluarga kita untuk terus melangkah lebih jauh bersama.';
+
+                revealTextOneByOne(scene3MainText, mainQuote3, 95, () => {
+                    scene3SubText.textContent = subQuote3;
+                    scene3SubText.style.opacity = '0';
+                    scene3SubText.style.transition = 'opacity 1s ease';
+                    requestAnimationFrame(() => {
+                        scene3SubText.style.opacity = '1';
+                    });
+
+                    const replayTimer = setTimeout(() => {
+                        scene3ReplayWrap.classList.remove('opacity-0', 'pointer-events-none');
+                    }, 1100);
+                    activeTimers.push(replayTimer);
+                });
+            }
+        }
+
+        document.getElementById('btnCubaTekan').addEventListener('click', () => {
+            romanticAudio.playChime();
+            enterScene(2);
+        });
+
+        document.getElementById('btnLihatIni').addEventListener('click', () => {
+            romanticAudio.playChime();
+            enterScene(3);
+        });
+
+        function resetToPage1() {
+            clearStoryTimers();
+            unlocked = false;
+            storyViewport.style.opacity = '0';
+            setTimeout(() => {
+                storyViewport.classList.add('hidden');
+                restartQuickBtn.classList.add('hidden');
+                restartQuickBtn.classList.remove('flex');
+                page1.classList.remove('hidden');
+                resetKnobPosition();
+                requestAnimationFrame(() => {
+                    page1.style.opacity = '1';
+                    page1.style.transform = 'translateY(0) scale(1)';
+                });
+            }, 350);
+        }
+
+        document.getElementById('btnReplay').addEventListener('click', () => {
+            romanticAudio.playChime();
+            resetToPage1();
+        });
+
+        restartQuickBtn.addEventListener('click', resetToPage1);
+    </script>
+</body>
+</html>
